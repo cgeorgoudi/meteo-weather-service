@@ -1,0 +1,54 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: meteo_app
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      APP_KEY: ${APP_KEY}
+      DB_HOST: mysql
+      DB_DATABASE: ${DB_DATABASE:-meteo}
+      DB_USERNAME: ${DB_USERNAME:-meteo}
+      DB_PASSWORD: ${DB_PASSWORD:-secret}
+      WEATHER_API_KEY: ${WEATHER_API_KEY}
+      DEFAULT_LOCATION_NAME: ${DEFAULT_LOCATION_NAME:-Athens}
+      DEFAULT_LOCATION_LAT: ${DEFAULT_LOCATION_LAT:-37.9838}
+      DEFAULT_LOCATION_LON: ${DEFAULT_LOCATION_LON:-23.7275}
+      DEFAULT_LOCATION_TIMEZONE: ${DEFAULT_LOCATION_TIMEZONE:-Europe/Athens}
+    volumes:
+      - .:/var/www
+      - /var/www/vendor
+    networks:
+      - meteo_network
+
+  mysql:
+    image: mysql:8.0
+    container_name: meteo_mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE:-meteo}
+      MYSQL_USER: ${DB_USERNAME:-meteo}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-secret}
+      MYSQL_ROOT_PASSWORD: rootsecret
+    volumes:
+      - mysql_data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-prootsecret"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - meteo_network
+
+networks:
+  meteo_network:
+    driver: bridge
+
+volumes:
+  mysql_data:
