@@ -18,7 +18,7 @@ No local PHP or Composer installation is required — everything runs inside Doc
 ### 1. Clone the repository
 
 ```bash
-git clone <repo-url> meteo
+git clone https://github.com/cgeorgoudi/meteo-weather-service.git meteo
 cd meteo
 ```
 
